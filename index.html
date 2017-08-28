@@ -1,0 +1,321 @@
+<html>
+    <head>
+        <link rel=stylesheet href="leaflet\leaflet.css" type=text/css>
+        <link rel=stylesheet href="fonts\DroidSans.ttf">
+        <link href="https://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet"> 
+        <script src=leaflet\leaflet.js ></script>
+        <script src=d3\d3.js></script>
+        <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+        <style type="text/css">
+        
+            body{
+                margin: 0;
+                overflow: hidden;
+            }
+
+            #mapid{
+                height: 60%;
+                width: 100%;
+                float: left;
+                transition: all 0.5s;
+                z-index: -1;
+                position: absolute;
+            }
+
+            #bottom-svg{
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                bottom: 0;
+            }
+
+            #bottom-panel-wrapper{
+                transition: all 0.5s;
+                width: 75%;
+                height: 40%;
+                background-color: #ddd;
+                position: absolute;
+                bottom: 0;
+                z-index: -1;
+            }
+
+            #target-list-id{
+                height: 100%;
+                width: 25%;
+                float: right;
+                font-family: 'Droid Sans';
+                overflow: auto;
+                background-color: #333;
+                color: #ddd;
+                text-align: center;
+                transition: all 0.5s;
+                position: relative;
+            }
+
+            #target-list-table{
+                border-collapse: collapse;
+                color: #ddd;
+                width: 100%;
+            }
+
+            #target-list-table-first{
+                text-align: left;
+            }
+
+            #target-list-table td{
+                padding: 20px 10px;
+                cursor: pointer;
+            }
+
+            .target-list-tr:hover{
+                background-color: rgba(0, 255, 255, 0.5);
+            }
+
+            #target-list-hr{
+                width: 75%;
+                margin: auto;
+                margin-bottom: 45px;
+            }
+
+            .context-menu{
+                list-style: none;
+                width: 50%;
+            }
+
+            #toggle-button{
+                height: 50px;
+                width: 50px;
+                background: url("sidebar-button-icon.png");
+                position: absolute;
+                z-index: 999;
+                left: calc(75% - 50px);
+                transition: all 0.5s;
+                border-radius: 0 0 0 5px;
+                cursor: pointer;
+            }
+
+            .active{
+                background-color: cyan;
+                color: #333;
+            }
+
+            #sample-space-1{
+                width: 33%;
+                height: 100%;
+                float: left;
+                margin: auto;
+            }
+
+            .progress-ring-svg{
+                position: relative;
+                transition: loop 2s infinite alternative;
+            }
+
+            @keyframes loop{
+                from{
+                    stroke-dashoffset: 339.292;
+                }
+                to{
+                    stroke-dashoffset: 0;
+                }
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id=mapid></div>
+        <div id=toggle-menu-wrapper>
+            <div id=toggle-button onclick=toggle_sidebar()></div>
+        </div>
+        <div id=target-list-id></div>
+        <div id=bottom-panel-wrapper>
+            <div id=sample-space-1></div>
+            <div id=sample-space-2></div>
+            <div id=sample-space-3></div>
+        </div>
+        <script type="text/javascript">
+            var lat = 44.036;
+            var long = -71.621; // Loon Mountain
+    
+            var mymap = L.map('mapid').setView([lat, long], 13); // Create map
+            var mushCloud = L.icon({ // Mushroom cloud icon
+                iconUrl: 'mushroom_cloud.png',
+                iconSize: [30, 30],
+                iconAnchor: [25, 5],
+                popupAnchor: [-3, -76]
+            });
+
+            function generate_li(elem, datum){
+                return "<li><b>" + elem + "</b>: " + datum + "</li>";
+            }
+
+            function filter_targets(tr, lat, long){
+                full_string = tr.innerText;
+                sub_string = full_string.substr(0,5); // Strike #
+                tr.parentNode.childNodes.forEach(function(elem){
+                    elem.classList.remove("active");
+                })
+                tr.className += " active";
+                mymap.setView([lat, long]);
+                generate_bottom_panel();
+                return sub_string;
+            }
+
+            d3.csv("test.csv", function(d){ // Deal with csv data
+                // Build popup includes
+                popup_context = ["Strike #", "Date", "Entity Name", "Entity ID", "Target_1", "Ordinance_1"];
+                popup_predicted = ["Physical", "Confidence", "Functional"];
+                popup_measured = ["MEA", "CDA"];
+                target_list = ["Strike #", "ATO", "Entity Name", "Country"];
+                target_list_html = "<h1>Click on a row to snap to a target</h1><hr id=target-list-hr><table id=target-list-table><tbody><tr id=target-list-table-first>";
+                target_list.forEach(function(elem){
+                    target_list_html += "<th>"  + elem + "</th>";
+                });
+                target_list_html += "</tr>";
+
+                for(var index in d){
+                    datum = d[index];
+                    d_lat  = datum["Lat"];
+                    d_long = datum["Long"];
+                    d_marker = L.marker([d_lat, d_long], {icon: mushCloud}).addTo(mymap); // Place datum points
+
+                    //Build popup
+                    // Main content (Strike #, Entity ID, etc.)
+                    d_marker_content = "";
+                    context_html = "<h2>Click to toggle target info and statistics</h2><ul class=context-menu>";
+                    popup_context.forEach(function(elem){
+                        context_html += generate_li(elem.replace("_1", ""), datum[elem]);
+                    });
+                    context_html += "</ul>";
+                    d_marker_content += context_html;
+                    // Predicted stats
+                    stats_html = "<h2>Click to toggle target info and statistics</h2><h3>Predictions</h3>";
+                    predicted_html = "<ul class=context-menu>"
+                    popup_predicted.forEach(function(elem){
+                        predicted_html += generate_li(elem.replace("_1", ""), datum[elem]);
+                    });
+                    predicted_html += "</ul>";
+                    stats_html += predicted_html;
+                    //Measured stats
+                    stats_html += "<h3>Results</h3>"
+                    measured_html = "<ul class=context-menu>"
+                    popup_measured.forEach(function(elem){
+                        measured_html += generate_li(elem.replace("_1", ""), datum[elem]);
+                    });
+                    measured_html += "</ul>";
+                    stats_html += measured_html;
+
+                    // Popup bindings
+                    //var popup = L.popup().setLatLng([d_lat, d_long]).setContent(d_marker_content);                   
+                    d_marker.bindPopup(d_marker_content);
+                    d_marker.on('mouseover', function(e){
+                        this.openPopup();
+                    });
+                    d_marker.on('mouseout', function(e){
+                        this.closePopup();
+                    });
+                    d_marker.on('click', function(e){
+                        temp = this._popup.getContent();
+                        if(temp.indexOf("Strike") > -1){ // Toggle between target info and stats
+                            to_return = stats_html;
+                        } else{
+                            to_return = d_marker_content;
+                        }
+                        this._popup.setContent(to_return);
+                        this.openPopup();
+                    });
+
+
+                    // TARGET LIST
+                    line = "<tr class=target-list-tr onclick=filter_targets(this,"+d_lat+","+d_long+")>";
+                    target_list.forEach(function(elem){
+                        line += "<td>" + datum[elem] + "</td>";
+                    });
+                    target_list_html += line + "</tr>";
+
+                };
+                target_list = document.getElementById("target-list-id");
+                target_list.innerHTML = target_list_html + "</tbody></table>";
+            });
+
+            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                maxZoom: 18,
+                id: 'mapbox.satellite',
+                accessToken: "pk.eyJ1Ijoiam9uYm9uZDUiLCJhIjoiY2o1eHN6aGk3MDlxOTMzb2VwYTJrMDFrZyJ9.KHDHGTi1u8WoFyR6FoPg2A"
+            }).addTo(mymap);
+
+            function toggle_sidebar(){
+                menu = document.getElementById("target-list-id");
+                button = document.getElementById("toggle-button");
+                map = document.getElementById("mapid");
+                bottom = document.getElementById('bottom-panel-wrapper');
+                if(menu.style.width != "0px"){
+                    menu.style.width = "0px";
+                    button.style.left = "calc(100% - 50px)";
+                    bottom.style.width = "100%";
+                    return
+                }
+                menu.style.width = "25%";
+                button.style.left = "calc(75% - 50px)";
+                bottom.style.width = "75%";
+            }
+
+            function generate_bottom_panel(){
+                s1 = document.getElementById("sample-space-1");
+                s2 = document.getElementById("sample-space-2");
+                s3 = document.getElementById("sample-space-3");
+                bottom = document.getElementById("bottom-panel-wrapper");
+                generate_progress_ring(s1);
+            }
+
+            function generate_progress_ring(parent){
+// https://codepen.io/xgad/post/svg-radial-progress-meters
+                //bottom = document.getElementById('bottom-panel-wrapper');
+                svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
+                //svg.id = "bottom-svg";
+                svg.setAttribute("width", "200");
+                svg.setAttribute("height", "200");
+                back_ring = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                back_ring.setAttribute("cx", "60");
+                back_ring.setAttribute("cy", "60");
+                back_ring.setAttribute("r", "54");
+                back_ring.setAttribute("fill", "none");
+                back_ring.setAttribute("stroke-width", "12");
+                front_ring = back_ring.cloneNode();
+                back_ring.setAttribute("stroke", "#e6e6e6");
+                front_ring.setAttribute("stroke", "#f77a52")
+                front_ring.setAttribute("stroke-dasharray", "339.292");
+                front_ring.setAttribute("stroke-dashoffset", "100");
+                front_ring.setAttribute("transform", "rotate(-90 60 60)");
+                front_ring.setAttribute("class", "progress-ring-svg");
+                svg.appendChild(back_ring);
+                svg.appendChild(front_ring);
+                parent.appendChild(svg);
+            }
+
+            function generate_svg_bubble(text, cx, cy, r){
+                svg = document.createElement("main-svg");
+                circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                svg_text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text_node = document.createTextNode(text);
+                circle.setAttribute("cx", cx);
+                circle.setAttribute("cy", cy)
+                circle.setAttribute("r", r);
+                circle.setAttribute("fill", "white");
+                svg_text.setAttribute("y", cy);
+                svg_text.setAttribute("x", cx);
+                svg_text.setAttribute("text-anchor", "middle");
+                svg_text.appendChild(text_node);
+                svg.appendChild(circle);
+                svg.appendChild(svg_text);
+            }
+            
+            function onload(){
+                generate_bottom_panel();
+            }
+
+            document.body.onload = onload();
+        </script>
+    </body>
+</html>
