@@ -1,0 +1,11 @@
+"","StrikeID","Physical","Physical.level","Physical.count","Confidence","Confidence.level","Confidence.count","MEA","MEA.level","MEA.count","CDA","CDA.level","CDA.count"
+"1",45917,"none(1)","none",1,"possible(1)","possible",1,"no high order impact(1)","no high order impact",1,NA,NA,NA
+"2",45917,"none(1)","none",1,"confident(2)","confident",2,"no high order impact(1)","no high order impact",1,NA,NA,NA
+"3",45917,"destroyed(2)","destroyed",2,"possible(1)","possible",1,"no high order impact(1)","no high order impact",1,NA,NA,NA
+"4",45917,"destroyed(2)","destroyed",2,"confident(2)","confident",2,"no high order impact(1)","no high order impact",1,NA,NA,NA
+"5",45918,"destroyed","destroyed",1,"confident","confident",1,NA,NA,NA,"building(3)","building",3
+"6",45919,"light damage(1)","light damage",1,"probable(1)","probable",1,"missed target(5)","missed target",5,NA,NA,NA
+"7",45919,"light damage(1)","light damage",1,"possible(2)","possible",2,"missed target(5)","missed target",5,NA,NA,NA
+"8",45919,"heavy damage (2)","heavy damage",2,"probable(1)","probable",1,"missed target(5)","missed target",5,NA,NA,NA
+"9",45919,"heavy damage (2)","heavy damage",2,"possible(2)","possible",2,"missed target(5)","missed target",5,NA,NA,NA
+"10",45920,"destroyed(1)","destroyed",1,"confident","confident",1,NA,NA,NA,"building(1)","building",1

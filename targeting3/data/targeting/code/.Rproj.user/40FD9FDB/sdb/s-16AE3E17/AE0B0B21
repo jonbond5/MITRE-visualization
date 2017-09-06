@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "InstalledPackage <- function(package) \n{\n    available <- suppressMessages(suppressWarnings(sapply(package, require, quietly = TRUE, character.only = TRUE, warn.conflicts = FALSE)))\n    missing <- package[!available]\n    if (length(missing) > 0) \n        return(FALSE)\n    return(TRUE)\n}\n\n# test code\n# if ( CRANChoosen() ) {\n#   # validate the cran; make sure if defined in environment\n#   # it actually existibg in evironment\n#   cranRepo = getOption(\"repos\")[\"CRAN\"]\n#   bEnvSpecified = grepl(\"\\\\$\\\\{\", cranRepo)\n#   if(bEnvSpecified) {\n#     # ok, set in environment, check to make sure set\n#     cran = gsub(\"\\\\{|\\\\}|\\\\$\", \"\", cranRepo)\n#     cranENV = Sys.getenv(cran)\n#     if(cranENV == '')\n#       options(repos = c(CRAN = cranMirror))\n#   }\n# }\n# cranChosen = TRUE\n# b = getOption(\"repos\")[\"CRAN\"] != \"@CRAN@\"\n# if(getOption(\"repos\")[\"CRAN\"] != \"@CRAN@\") {\n#   bEnvSpecified = grepl(\"\\\\$\\\\{\", cranRepo)\n#   if(bEnvSpecified) {\n#     # ok, set in environment, check to make sure set\n#     cran = gsub(\"\\\\{|\\\\}|\\\\$\", \"\", cranRepo)\n#     cranENV = Sys.getenv(cran)\n#     if(cranENV == '')\n#       cranChosen = FALSE\n#   }\n# }\nCRANChoosen <- function()\n{\n  #return(getOption(\"repos\")[\"CRAN\"] != \"@CRAN@\")\n  # validate the cran; make sure if defined in environment\n  # it actually exists in evironment\n  cranChosen = TRUE\n  cranRepo = getOption(\"repos\")[\"CRAN\"]\n  if(cranRepo != \"@CRAN@\") {\n    bEnvSpecified = grepl(\"\\\\$\\\\{\", cranRepo)\n    if(bEnvSpecified) {\n      # ok, set in environment, check to make sure set\n      cran = gsub(\"\\\\{|\\\\}|\\\\$\", \"\", cranRepo)\n      cranENV = Sys.getenv(cran)\n      if(cranENV == '')\n        cranChosen = FALSE\n    }\n  }\n  return(cranChosen)\n}\n\nUsePackage <- function(package, defaultCRANmirror = \"https://cran.cnr.berkeley.edu/\") \n{\n    if(!InstalledPackage(package))\n    {\n        if(!CRANChoosen())\n        {   \n            # chooser requires a human in loop...  \n            # chooseCRANmirror is from utils package\n            #chooseCRANmirror()\n            #if(!CRANChoosen())\n            #{\n                options(repos = c(CRAN = defaultCRANmirror))\n            #}\n        }\n        # always load dependencies...  otherwise will silently die (on occasion)\n        suppressMessages(suppressWarnings(install.packages(package, dependencies = T)))\n        if(!InstalledPackage(package)) \n            return(FALSE)\n    }\n    return(TRUE)\n}\n",
+    "created" : 1503069760379.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2768528117",
+    "id" : "AE0B0B21",
+    "lastKnownWriteTime" : 1503069815,
+    "last_content_update" : 1503069815244,
+    "path" : "/mnt/data/targeting/libraries/LoadLib.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
