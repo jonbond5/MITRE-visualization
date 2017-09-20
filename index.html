@@ -223,6 +223,11 @@
                 }
             }
 
+            #panel-2-progress-bar{
+                transition: 1s all;
+
+            }
+
             .svg-progress-bar{
                 transition: .5s all;
             }
@@ -362,6 +367,7 @@
                 // For all rows in the spreadsheet...
                 for(var index in d){
                     datum = d[index];
+                    delete datum[ Object.keys(datum)[0] ]; // Remove row number
                     // Keep global dataset updated for global use
                     try{
                         dataset[datum["Strike #"]].push(datum);
@@ -462,16 +468,16 @@
                 return svg;
             }
 
-            function generate_progress_bar(x, y, width, text){
-                rect = document.createElementNS(svg_link, 'rect');
-                label = document.createElement("label");
-                text_node = document.createTextNode(text);
+            function generate_progress_bar(x, y, text){
+                var rect = document.createElementNS(svg_link, 'rect');
+                var label = document.createElement("label");
+                var text_node = document.createTextNode(text);
+                rect.id = "panel-2-progress-bar";
                 label.appendChild(text_node);
                 rect.setAttribute("class", "svg-progress-bar");
                 rect.setAttribute('x', x);
                 rect.setAttribute('y', y);
                 rect.setAttribute('width', 0);
-                rect.setAttribute('width', width);
                 rect.setAttribute('height', 35);
                 return rect;
             }
@@ -520,13 +526,17 @@
                 }
             }
 
-            function generate_panel_2(strike){
+            function generate_panel_2(strike){/*
                 var panel = document.getElementById("sample-space-2");
                 var header = document.createElement("h1");
                 header.innerText = "Effectiveness";
-
-                // 1 to 1 ordinance to target check
-
+                var datum = find_analysis_counts(strike);
+                var progress_ring = generate_progress_ring("1");
+                var rect = generate_progress_bar(10, 10, 'test');
+                var svg = document.createElementNS(svg_link, 'svg');
+                svg.appendChild(rect);
+                panel.appendChild(svg);
+                rect.setAttribute('width', '100');*/
             }
 
             function generate_panel_3(strike){
@@ -537,7 +547,6 @@
                 var info_list = document.createElement("ul");
                 info_list.id = "panel-3-list";
                 var data = dataset[strike][0];
-                delete data[ Object.keys(data)[0] ]; // Remove row number
                 for(var i in data){
                     info_list_elem = document.createElement("li");
                     info_list_elem.innerHTML = "<b>" + i + "</b>: " + data[i];
