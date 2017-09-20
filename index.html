@@ -1,12 +1,15 @@
 <html>
     <head>
+        <meta charset="utf-8">
         <link rel=stylesheet href="leaflet\leaflet.css" type=text/css>
-        <link rel=stylesheet href="fonts\DroidSans.ttf">
-        <link href="https://fonts.googleapis.com/css?family=Droid+Sans" rel="stylesheet"> 
-        <script src=leaflet\leaflet.js ></script>
+        <script src=leaflet\leaflet.js></script>
         <script src=d3\d3.js></script>
-        <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
         <style type="text/css">
+            @font-face{
+                font-family: "Droid Sans";
+                src: url("./fonts/DroidSans-Regular.ttf");
+            }
+
             *{
 
                 font-family: 'Droid Sans';
@@ -35,7 +38,7 @@
 
             #bottom-panel-wrapper{
                 transition: all 0.5s;
-                width: 75%;
+                width: 100%;
                 height: 40%;
                 background-color: #ddd;
                 position: absolute;
@@ -45,7 +48,7 @@
 
             #target-list-id{
                 height: 100%;
-                width: 25%;
+                width: 0px;
                 float: right;
                 overflow: auto;
                 background-color: #333;
@@ -95,7 +98,7 @@
                 background: url("sidebar-button-icon.png");
                 position: absolute;
                 z-index: 999;
-                left: calc(75% - 50px);
+                left: calc(100% - 50px);
                 transition: all 0.5s;
                 border-radius: 0 0 0 5px;
                 cursor: pointer;
@@ -104,12 +107,6 @@
             .active{
                 background-color: cyan !important;
                 color: #333;
-            }
-
-            .active_icon{
-                background-color: cyan;
-                padding: 4px;
-                border-radius: 16px;
             }
 
             div[id*=sample-space-]{
@@ -128,14 +125,32 @@
             .panel-1-list{
                 width: 100%;
                 margin-left: 0;
+                list-style: none;
+                padding: 5px 24px;
             }
 
             .panel-1-list li{
                 margin-right: 32px;
             }
 
-            .panel-list{
-                list-style: upper-alpha;
+            .panel-1-list li:first-child{
+                font-size: 1.5em;
+            }
+
+            #sample-space-1 div:nth-child(even){
+                background-color: white;
+            }
+
+            .panel-1-box{
+                position: relative;
+                opacity: 0;
+                width: 80%;
+                margin: auto;
+                border-radius: 10px;
+                box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
+                line-height: 2em;
+                animation: 1s fade-in-side;
+                animation-fill-mode: forwards !important;
             }
 
             #panel-3-list{
@@ -220,6 +235,10 @@
                 border-radius: 13px;
                 box-shadow: 0 2px 9px rgba(0,0,0,0.5);
                 padding: 1px;
+                position: relative;
+                left: -30px;
+                opacity: 0;
+                animation-fill-mode: forwards !important;
             }
 
             .info-box-header{
@@ -227,32 +246,6 @@
                 margin-left: 10%;
             }
 
-            #conf-id{
-                position: relative;
-                left: -30px;
-                opacity: 0;
-                background-color: cyan;
-                animation-fill-mode: forwards !important;
-                animation: fade-in-side .75s;
-            }
-
-            #mea-id{
-                position: relative;
-                left: -30px;
-                opacity: 0;
-                background-color: #800;
-                animation-fill-mode: forwards !important;
-                animation: fade-in-side .75s .25s;
-            }
-
-            #phys-id{
-                position: relative;
-                left: -30px;
-                opacity: 0;
-                background-color: #0f0;
-                animation-fill-mode: forwards !important;
-                animation: fade-in-side .75s .5s;
-            }
 
             @keyframes fade-in-side{
                 from{
@@ -281,32 +274,28 @@
         </div>
         <script type="text/javascript">
             var lat = 44.036;
-            var long = -71.621; // Loon Mountain
+            var long = -71.621; // Loon Mountain, default location
     
             var mymap = L.map('mapid').setView([lat, long], 13); // Create map
-            var mushCloud = L.icon({ // Mushroom cloud icon
-                iconUrl: 'mushroom_cloud.png',
-                iconSize: [30, 30],
-                iconAnchor: [25, 5],
-                popupAnchor: [-3, -76]
-            });
-            dataset = {};
-            analysis = [];
-            svg_link = "http://www.w3.org/2000/svg";
-            keep_bottom_panels_alive = false;
+            dataset = {}; // Spreadsheet data
+            analysis = []; // Analysis spreadsheet data 
+            svg_link = "http://www.w3.org/2000/svg"; // Namespace link
 
             function generate_li(elem, datum){
+                // Return formatted list item
                 return "<li><b>" + elem + "</b>: " + datum + "</li>";
             }
 
-            function filter_targets(tr_class, lat, long, strike, jump=false){ // Called when a tr is clicked in target-list
+            function filter_targets(tr_class, lat, long, strike, jump=false){ 
+            // Called when a tr is clicked in target-list or on marker hover
                 clear_target_list();
                 var class_list = document.getElementsByClassName(tr_class);
-                var icon = class_list[0];
-                tr = class_list[1]; // 0 -> icon;  1 -> tr
+                var tr = class_list[1]; // 0 -> icon;  1 -> tr
+                var img = class_list[0];
+                img.classList.add("active_icon");
+                img.src = "./green-marker.png";
                 tr.className += " active";
-                icon.className += " active_icon";
-                if(jump){
+                if(jump){ // Does the map need to move?
                     mymap.setView([lat, long]);
                 }
                 // Build bottom panel
@@ -314,54 +303,55 @@
                 generate_panels(strike, dataset[strike][0]["Entity Name"]);
             };
 
-            function find_analysis_counts(strike){ // 
+            function find_analysis_counts(strike){ 
+                // From analysis spreadsheet get counts for each ATO in strike
                 var to_return = [];
                 analysis[0].forEach(function(d){
                     if (d['StrikeID'] == strike){
-                        var conf = d['Confidence'];
-                        var mea = d['MEA'];
-                        var physical = d['Physical'];
-                        to_return.push({'conf': conf, 'mea': mea, 'phys': physical});
+                        var conf = d['Confidence.count'];
+                        var mea = d['MEA.count'];
+                        var physical = d['Physical.count'];
+                        to_return.push({'ATO': 'N/A', 'conf': conf, 'mea': mea, 'phys': physical});
                     }
                 })
                 return to_return;
             }
 
             function find_analysis_levels(strike){
+                // From analysis spreadsheet get description for each ATO in strike
                 var to_return = [];
                 analysis[0].forEach(function(d){
                     if(d['StrikeID'] == strike){
                         var conf = d['Confidence.level'];
                         var mea = d['MEA.level'];
                         var physical = d['Physical.level'];
-                        to_return.push({'conf': conf, 'mea': mea, 'phys': physical});
+                        var cda = d['CDA.level'];
+                        to_return.push({'ATO': 'N/A', 'MEA': mea, 'Physical': physical, 'CDA': cda, 'Confidence': conf});
                     }
                 })
                 return to_return
             }
 
-            d3.csv("analysis.csv", function(d){
+            d3.csv("analysis.csv", function(d){ // Generate analysis variable
                 analysis.push(d);
             });
 
-            d3.csv("test.csv", function(d){ // Deal with csv data
+            d3.csv("test.csv", function(d){ 
+                // Load spreadsheet data and generate target list, markers, and global variables
                 // Build popup includes
-                var popup_context = ["Strike #", "Date", "Entity Name", "Entity ID", "Target_1", "Ordinance_1"];
-                var popup_predicted = ["Physical.level", "Confidence.level", "MEA.level"];
-                var popup_measured = ["MEA", "CDA"];
                 var target_list = ["Strike #", "ATO", "Entity Name", "Country"];
                 var target_list_title = document.createElement("h1");
-                var target_list_hr = document.createElement("hr");
                 var target_list_table = document.createElement("table")
                 var target_list_table_body = document.createElement("tbody");
                 var target_list_tr = document.createElement("tr");
                 var target_list_id_counter = 0;
 
+                // Create target list table (unpopulated)
                 target_list_title.innerText = "Click on a row to snap to a target";
-                target_list_hr.id = "target-list-hr";;
                 target_list_table.id = "target-list-table";
                 target_list_table_body.id = "target-list-table-body";
                 target_list_tr.id = "target-list-table-first"; 
+                // Generate target list header
                 target_list.forEach(function(elem){                
                     target_list_th = document.createElement("th");
                     target_list_th.innerText = elem;
@@ -369,9 +359,10 @@
                 });
                 target_list_table_body.appendChild(target_list_tr);
 
+                // For all rows in the spreadsheet...
                 for(var index in d){
-                    var target_list_html = "";
                     datum = d[index];
+                    // Keep global dataset updated for global use
                     try{
                         dataset[datum["Strike #"]].push(datum);
                     }
@@ -380,45 +371,10 @@
                     }
                     d_lat  = datum["Lat"];
                     d_long = datum["Long"];
-                    d_marker = L.marker([d_lat, d_long], {icon: mushCloud}).addTo(mymap); // Place datum points
+                    //d_marker = L.marker([d_lat, d_long], {icon: mushCloud}).addTo(mymap); // Place datum points
+                    d_marker = L.marker([d_lat, d_long]).addTo(mymap); // Place datum points
                     d_marker_icon = d_marker._icon;
                     d_marker_icon.className += " " + String(target_list_id_counter);
-
-                    //Build popup
-                    // Main content (Strike #, Entity ID, etc.)
-                    d_marker_content = "";
-                    context_html = "<h2>Click to close</h2><ul class=context-menu>";
-                    popup_context.forEach(function(elem){
-                        context_html += generate_li(elem.replace("_1", ""), datum[elem]);
-                    });
-                    context_html += "</ul>";
-                    d_marker_content += context_html;
-                    // Predicted stats
-                    stats_html = "<h2>Click to toggle target info and statistics</h2><h3>Predictions</h3>";
-                    predicted_html = "<ul class=context-menu>"
-                    predicted_html += "</ul>";
-                    stats_html += predicted_html;
-                    //Measured stats
-                    stats_html += "<h3>Results</h3>";
-                    measured_html = "<ul class=context-menu>"
-                    popup_measured.forEach(function(elem){
-                        measured_html += generate_li(elem.replace("_1", ""), datum[elem]);
-                    });
-                    measured_html += "</ul>";
-                    stats_html += measured_html;
-
-                    // Popup bindings
-                    //d_marker.bindPopup(d_marker_content);
-                    d_marker.on('mouseout', function(e){
-                        if(!keep_bottom_panels_alive){
-                            destroy_bottom_panel();
-                            clear_target_list();
-                        }
-                    });
-
-                    d_marker.on('click', function(e){
-                        keep_bottom_panels_alive = !keep_bottom_panels_alive;
-                    });
 
                     // TARGET LIST
                     var target_list_tr = document.createElement("tr");
@@ -452,15 +408,15 @@
                 button = document.getElementById("toggle-button");
                 map = document.getElementById("mapid");
                 bottom = document.getElementById('bottom-panel-wrapper');
-                if(menu.style.width != "0px"){
-                    menu.style.width = "0px";
-                    button.style.left = "calc(100% - 50px)";
-                    bottom.style.width = "100%";
+                if(menu.style.width != "25%"){
+                    menu.style.width = "25%";
+                    button.style.left = "calc(75% - 50px)";
+                    bottom.style.width = "75%";
                     return
                 }
-                menu.style.width = "25%";
-                button.style.left = "calc(75% - 50px)";
-                bottom.style.width = "75%";
+                menu.style.width = "0px";
+                button.style.left = "calc(100% - 50px)";
+                bottom.style.width = "100%";
             }
 
             function destroy_bottom_panel(){
@@ -473,14 +429,12 @@
             }
 
             function clear_target_list(){
-                try{
-                    var active_target = document.getElementsByClassName("active")[0];
-                    var active_icon = document.getElementsByClassName("active_icon")[0];
-                    active_target.classList.remove("active");
-                    active_icon.classList.remove("active_icon");
-                }
-                catch(e){
-                    return;
+                var active_target = document.getElementsByClassName("active");
+                var active_icon = document.getElementsByClassName("active_icon");
+                if(active_target.length){
+                    active_target[0].classList.remove("active");
+                    active_icon[0].src = "./leaflet/images/marker-icon-2x.png";
+                    active_icon[0].classList.remove("active_icon");
                 }
             }
 
@@ -488,7 +442,6 @@
 // https://codepen.io/xgad/post/svg-radial-progress-meters
                 //bottom = document.getElementById('bottom-panel-wrapper');
                 svg = document.createElementNS(svg_link,'svg');
-                //svg.id = "bottom-svg";
                 svg.setAttribute("class", "svg");
                 svg.setAttribute("width", "150");
                 svg.setAttribute("height", "150");
@@ -503,6 +456,7 @@
                 front_ring.setAttribute("stroke-dasharray", "339.292");
                 front_ring.setAttribute("transform", "rotate(-90 60 60)");
                 front_ring.setAttribute("class", "progress-ring-svg-" + class_name);
+
                 svg.appendChild(back_ring);
                 svg.appendChild(front_ring);
                 return svg;
@@ -546,76 +500,33 @@
                 header.id = "panel-1-header";
                 panel.appendChild(header);
                 base_info_box = generate_info_boxes();
-                var conf = document.createElement("ul");
-                conf.className += "panel-list";
-                var mea = conf.cloneNode();
-                var phys = conf.cloneNode();
-                var elements = find_analysis_counts(strike);
-
-                elements.forEach(function(elem){ // Confidence
-                    var li_conf = document.createElement("li");
-                    var li_mea = li_conf.cloneNode();
-                    var li_phys = li_conf.cloneNode();
-                    li_conf.innerText = elem['conf'];
-                    li_mea.innerText = elem['mea'];
-                    li_phys.innerText = elem['phys'];
-                    conf.appendChild(li_conf);
-                    mea.appendChild(li_mea);
-                    phys.appendChild(li_phys);
+                base_info_box.className = "panel-1-box";
+                var elements = find_analysis_levels(strike);
+                elements.forEach(function(bda){
+                    var box_clone = base_info_box.cloneNode();
+                    var box_clone_header = document.createElement("h2");
+                    var box_list = document.createElement("ol");
+                    box_list.className = "panel-1-list";
+                    for(var i in bda){
+                        var box_list_item = document.createElement("li");
+                        box_list_item.innerHTML = "<b>" + i + "</b>: " + bda[i];
+                        box_list.appendChild(box_list_item);
+                    }
+                    box_clone.appendChild(box_list);
+                    panel.appendChild(box_clone);
                 });
-
-                conf_info_box = base_info_box.cloneNode(true);
-                conf_info_box.children[0].innerHTML = "Confidence";
-                conf_info_box.children[1].replaceWith(conf);
-                mea_info_box = base_info_box.cloneNode(true);
-                mea_info_box.children[0].innerHTML = "MEA";
-                mea_info_box.children[1].replaceWith(mea);
-                phys_info_box = base_info_box.cloneNode(true);
-                phys_info_box.children[0].innerHTML = "Physical";
-                phys_info_box.children[1].replaceWith(phys);
-                conf_info_box.id = "conf-id";
-                mea_info_box.id = "mea-id";
-                phys_info_box.id = "phys-id";
-                mea_info_box.style.color = "#eee";
-                panel.appendChild(conf_info_box);
-                panel.appendChild(mea_info_box);
-                panel.appendChild(phys_info_box);
+                for(var i =1; i < panel.childElementCount; i++){
+                    panel.childNodes[i].style.animationDelay = String(i / 4 - .25) + "s";
+                }
             }
 
             function generate_panel_2(strike){
                 var panel = document.getElementById("sample-space-2");
                 var header = document.createElement("h1");
-                header.innerText = "Cool Stats";
-                var demo_ring_1 = generate_progress_ring("1");
-                var demo_ring_2 = generate_progress_ring("2");
-                var demo_ring_3 = generate_progress_ring("3");
-                
-                demo_ring_1.setAttribute("stroke", "#0ff");
-                demo_ring_2.setAttribute("stroke", "#800");
-                demo_ring_3.setAttribute("stroke", "#0f4");
+                header.innerText = "Effectiveness";
 
-                demo_ring_text_1 = document.createElementNS(svg_link, "text");
-                demo_ring_text_2 = document.createElementNS(svg_link, "text");
-                demo_ring_text_3 = document.createElementNS(svg_link, "text");
-                demo_ring_text_1.innerHTML = "Confidence";
-                demo_ring_text_2.innerHTML = "MEA";
-                demo_ring_text_3.innerHTML = "Physical";
-                temp = [demo_ring_text_1, demo_ring_text_2, demo_ring_text_3];
-                demo_ring_text_1.setAttribute("x", "20");
-                demo_ring_text_2.setAttribute("x", "45");
-                demo_ring_text_3.setAttribute("x", "30");
-                temp.forEach(function(d){
-                    d.setAttribute("y", "50");
-                })
+                // 1 to 1 ordinance to target check
 
-                demo_ring_1.appendChild(demo_ring_text_1);
-                demo_ring_2.appendChild(demo_ring_text_2);
-                demo_ring_3.appendChild(demo_ring_text_3);
-
-                panel.appendChild(header);
-                panel.appendChild(demo_ring_1);
-                panel.appendChild(demo_ring_2);
-                panel.appendChild(demo_ring_3);
             }
 
             function generate_panel_3(strike){
@@ -626,6 +537,7 @@
                 var info_list = document.createElement("ul");
                 info_list.id = "panel-3-list";
                 var data = dataset[strike][0];
+                delete data[ Object.keys(data)[0] ]; // Remove row number
                 for(var i in data){
                     info_list_elem = document.createElement("li");
                     info_list_elem.innerHTML = "<b>" + i + "</b>: " + data[i];
@@ -652,43 +564,39 @@
                 return base_info_box;
             }
 
+            /*
 
+                var demo_ring_1 = generate_progress_ring("1");
+                var demo_ring_2 = generate_progress_ring("2");
+                var demo_ring_3 = generate_progress_ring("3");
+                
+                demo_ring_1.setAttribute("stroke", "#0ff");
+                demo_ring_2.setAttribute("stroke", "#800");
+                demo_ring_3.setAttribute("stroke", "#0f4");
 
+                demo_ring_text_1 = document.createElementNS(svg_link, "text");
+                demo_ring_text_2 = document.createElementNS(svg_link, "text");
+                demo_ring_text_3 = document.createElementNS(svg_link, "text");
+                demo_ring_text_1.innerHTML = "Confidence";
+                demo_ring_text_2.innerHTML = "MEA";
+                demo_ring_text_3.innerHTML = "Physical";
+                var temp = [demo_ring_text_1, demo_ring_text_2, demo_ring_text_3];
+                demo_ring_text_1.setAttribute("x", "20");
+                demo_ring_text_2.setAttribute("x", "45");
+                demo_ring_text_3.setAttribute("x", "30");
+                temp.forEach(function(d){
+                    d.setAttribute("y", "50");
+                })
 
-                /*var header = document.createElement("h1");
-                header.id = "panel-2-header";
-                header.innerText = "Comments";
+                demo_ring_1.appendChild(demo_ring_text_1);
+                demo_ring_2.appendChild(demo_ring_text_2);
+                demo_ring_3.appendChild(demo_ring_text_3);
+
                 panel.appendChild(header);
-                var base_info_box = generate_info_boxes();
-                var conf = document.createElement("ol");
-                conf.className = "panel-list";
-                var mea = conf.cloneNode();
-                var phys = conf.cloneNode();
-                var elements = find_analysis_levels(strike);
-                elements.forEach(function(elem){ // Confidence
-                    var li_conf = document.createElement("li");
-                    var li_mea = li_conf.cloneNode();
-                    var li_phys = li_conf.cloneNode();
-                    li_conf.innerText = elem['conf'];
-                    li_mea.innerText = elem['mea'];
-                    li_phys.innerText = elem['phys'];
-                    conf.appendChild(li_conf);
-                    mea.a\ppendChild(li_mea);
-                    phys.appendChild(li_phys);
-                });
-
-                conf_info_box = base_info_box.cloneNode(true);
-                conf_info_box.children[0].innerHTML = "Confidence";
-                conf_info_box.children[1].replaceWith(conf);
-                mea_info_box = base_info_box.cloneNode(true);
-                mea_info_box.children[0].innerHTML = "MEA";
-                mea_info_box.children[1].replaceWith(mea);
-                phys_info_box = base_info_box.cloneNode(true);
-                phys_info_box.children[0].innerHTML = "Physical";
-                phys_info_box.children[1].replaceWith(phys);
-                panel.appendChild(conf_info_box);
-                panel.appendChild(mea_info_box);
-                panel.appendChild(phys_info_box);*/
+                panel.appendChild(demo_ring_1);
+                panel.appendChild(demo_ring_2);
+                panel.appendChild(demo_ring_3);
+                */
         </script>
     </body>
 </html>
