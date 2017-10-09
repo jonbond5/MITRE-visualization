@@ -5,6 +5,12 @@
         <script src=leaflet\leaflet.js></script>
         <script src=d3\d3.js></script>
         <style type="text/css">
+        /* Global styles */
+
+            .leaflet-bottom.leaflet-right{
+                display: none;
+            }
+            
             @font-face{
                 font-family: "Droid Sans";
                 src: url("./fonts/DroidSans-Regular.ttf");
@@ -20,6 +26,9 @@
                 overflow: hidden;
             }
 
+        /* Map styles*/
+
+
             #mapid{
                 height: 60%;
                 width: 100%;
@@ -29,21 +38,12 @@
                 position: absolute;
             }
 
-            #bottom-svg{
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                bottom: 0;
-            }
+            /* sidebar list styles */
 
-            #bottom-panel-wrapper{
-                transition: all 0.5s;
+            #target-list-table{
+                border-collapse: collapse;
+                color: #ddd;
                 width: 100%;
-                height: 40%;
-                background-color: #ddd;
-                position: absolute;
-                bottom: 0;
-                z-index: -1;
             }
 
             #target-list-id{
@@ -58,14 +58,9 @@
                 position: relative;
             }
 
-            #target-list-table{
-                border-collapse: collapse;
-                color: #ddd;
-                width: 100%;
-            }
-
             #target-list-table-first{
                 text-align: left;
+                background-color: #333 !important;
             }
 
             #target-list-table td{
@@ -75,6 +70,7 @@
 
             #target-list-table tr:hover{
                 background-color: rgba(0, 255, 255, 0.5);
+                color: #333;
             }
 
             #target-list-table-body tr{
@@ -87,9 +83,9 @@
                 margin-bottom: 45px;
             }
 
-            .context-menu{
-                list-style: none;
-                width: 50%;
+            .target-list-active{
+                background-color: cyan !important;
+                color: #333;
             }
 
             #toggle-button{
@@ -104,12 +100,19 @@
                 cursor: pointer;
             }
 
-            .active{
-                background-color: cyan !important;
-                color: #333;
+            /* Panel styles */
+
+            #bottom-panel-wrapper{
+                transition: all 0.5s;
+                width: 100%;
+                height: 40%;
+                background-color: #ddd;
+                position: absolute;
+                bottom: 0;
+                z-index: -1;
             }
 
-            div[id*=sample-space-]{
+            div[id*=panel-]{
                 width: 33%;
                 height: 100%;
                 float: left;
@@ -118,9 +121,11 @@
                 overflow-x: hidden;
             }
 
-            div[id^=sample-space-] h1{
+            div[id^=panel-] h1{
                 margin-left: 12px;
             }
+
+            /* panel 1 */
 
             .panel-1-list{
                 width: 100%;
@@ -137,10 +142,6 @@
                 font-size: 1.5em;
             }
 
-            #sample-space-1 div:nth-child(even){
-                background-color: white;
-            }
-
             .panel-1-box{
                 position: relative;
                 opacity: 0;
@@ -153,6 +154,27 @@
                 animation-fill-mode: forwards !important;
             }
 
+            /* panel 2 */
+
+            #panel-2-list{
+                list-style: none;
+                font-size: 1.5em;
+            }
+
+            #panel-2-list li{
+                padding: 10px;
+            }
+
+            #panel-2-ring-text{
+                font-size: 2em;
+            }
+
+            #panel-2-targeteer-ring{
+                float: right;
+            }
+
+            /* panel 3 */
+
             #panel-3-list{
                 opacity: 0;
                 position: relative;
@@ -162,74 +184,8 @@
                 animation-fill-mode: forwards !important;
             }
 
-            @keyframes fade-in{
-                from{
-                    opacity: 0;
-                    top: 30px;
-                }
-                to{
-                    opacity: 1;
-                    top: 0px;
-                }
-            }
-
             #panel-3-list li{
                 padding-bottom: 10px;
-            }
-
-            *[class*=progress-ring-svg]{
-                position: relative;
-                animation-fill-mode: forwards !important;
-            }
-
-            .progress-ring-svg-1{
-                animation: "progress1" 1s;
-            }
-
-            .progress-ring-svg-2{
-                animation: "progress2" 1s;
-            }
-
-            .progress-ring-svg-3{
-                animation: "progress3" 1s;
-            }
-
-            /* Demo keyframes; use JS to generate them in future development */
-            @keyframes progress1{
-                from{
-                    stroke-dashoffset: 0px;
-                }
-
-                to{
-                    stroke-dashoffset: 200px;
-                }
-            }
-            @keyframes progress2{
-                from{
-                    stroke-dashoffset: 0px;
-                }
-
-                to{
-                    stroke-dashoffset: 300px;
-                }
-            }
-            @keyframes progress3{
-                from{
-                    stroke-dashoffset: 0px;
-                }
-
-                to{
-                    stroke-dashoffset: 100px;
-                }
-            }
-
-            #panel-2-progress-bar{
-                transition: 1s all;
-
-            }
-
-            .svg-progress-bar{
-                transition: .5s all;
             }
 
             .info-box{
@@ -249,6 +205,32 @@
             .info-box-header{
                 margin-top: 12px;
                 margin-left: 10%;
+            }
+
+            /* Header colors */
+            .green{
+                background-color: #6f6;
+            }
+
+            .yellow{
+                background-color: #ff6;
+            }
+
+            .red{
+                background-color: #f66;
+            }
+
+            /* Keyframes */
+
+            @keyframes fade-in{
+                from{
+                    opacity: 0;
+                    top: 30px;
+                }
+                to{
+                    opacity: 1;
+                    top: 0px;
+                }
             }
 
 
@@ -273,9 +255,9 @@
         </div>
         <div id=target-list-id></div>
         <div id=bottom-panel-wrapper>
-            <div id=sample-space-1></div>
-            <div id=sample-space-2></div>
-            <div id=sample-space-3></div>
+            <div id=panel-1></div>
+            <div id=panel-2></div>
+            <div id=panel-3></div>
         </div>
         <script type="text/javascript">
             var lat = 44.036;
@@ -287,19 +269,20 @@
             svg_link = "http://www.w3.org/2000/svg"; // Namespace link
 
             function generate_li(elem, datum){
-                // Return formatted list item
+                // Return formatted list item in [bold name]: [name 2]
                 return "<li><b>" + elem + "</b>: " + datum + "</li>";
             }
 
             function filter_targets(tr_class, lat, long, strike, jump=false){ 
             // Called when a tr is clicked in target-list or on marker hover
+            // Controls map jumping, active class addition/removal, and panel generation
                 clear_target_list();
                 var class_list = document.getElementsByClassName(tr_class);
                 var tr = class_list[1]; // 0 -> icon;  1 -> tr
                 var img = class_list[0];
                 img.classList.add("active_icon");
                 img.src = "./green-marker.png";
-                tr.className += " active";
+                tr.className += " target-list-active";
                 if(jump){ // Does the map need to move?
                     mymap.setView([lat, long]);
                 }
@@ -312,6 +295,7 @@
                 // From analysis spreadsheet get counts for each ATO in strike
                 var to_return = [];
                 analysis[0].forEach(function(d){
+                    // analysis[0] --> [ {}, {}, {}, ...]
                     if (d['StrikeID'] == strike){
                         var conf = d['Confidence.count'];
                         var mea = d['MEA.count'];
@@ -337,19 +321,23 @@
                 return to_return
             }
 
+            function find_targeteer_rates(strike){
+                
+            }
+
             d3.csv("analysis.csv", function(d){ // Generate analysis variable
                 analysis.push(d);
             });
 
             d3.csv("test.csv", function(d){ 
                 // Load spreadsheet data and generate target list, markers, and global variables
-                // Build popup includes
-                var target_list = ["Strike #", "ATO", "Entity Name", "Country"];
+                // Variables for sidebar table generation
+                var target_list = ["Strike #", "ATO", "Entity Name", "Country"]; // Whitelist of keys to be used in sidebar
                 var target_list_title = document.createElement("h1");
                 var target_list_table = document.createElement("table")
                 var target_list_table_body = document.createElement("tbody");
                 var target_list_tr = document.createElement("tr");
-                var target_list_id_counter = 0;
+                var target_list_class_counter = 0; // Unique class name linking icon and tr 
 
                 // Create target list table (unpopulated)
                 target_list_title.innerText = "Click on a row to snap to a target";
@@ -366,54 +354,58 @@
 
                 // For all rows in the spreadsheet...
                 for(var index in d){
-                    datum = d[index];
+                    var datum = d[index];
                     delete datum[ Object.keys(datum)[0] ]; // Remove row number
                     // Keep global dataset updated for global use
+                    // dataset --> {Strike: [{}, {}, ...], Strike: [{}, {}, ...], ...}
                     try{
                         dataset[datum["Strike #"]].push(datum);
                     }
                     catch(e){
                         dataset[datum["Strike #"]] = [datum];
                     }
-                    d_lat  = datum["Lat"];
-                    d_long = datum["Long"];
-                    //d_marker = L.marker([d_lat, d_long], {icon: mushCloud}).addTo(mymap); // Place datum points
-                    d_marker = L.marker([d_lat, d_long]).addTo(mymap); // Place datum points
+                    var d_lat  = datum["Lat"];
+                    var d_long = datum["Long"];
+                    var d_marker = L.marker([d_lat, d_long]).addTo(mymap); // Place datum points
                     d_marker_icon = d_marker._icon;
-                    d_marker_icon.className += " " + String(target_list_id_counter);
+                    d_marker_icon.className += " " + String(target_list_class_counter);
 
                     // TARGET LIST
                     var target_list_tr = document.createElement("tr");
-                    onclick_string = "filter_targets("+target_list_id_counter+","+d_lat+","+d_long+","+datum['Strike #']
-                    target_list_tr.setAttribute("onclick", onclick_string + ", true)");
-                    d_marker_icon.setAttribute("onmouseover", onclick_string + ")");
+                    var onclick_string = "filter_targets("+target_list_class_counter+","+d_lat+","+d_long+","+datum['Strike #']; // Base function string
+                    // onclick_string is passed to filter_targets with var jump either true or false
+                    // Hovering over an icon should not jump, clicking on sidebar should jump
+                    target_list_tr.setAttribute("onclick", onclick_string + ", true)"); // Table, jump
+                    d_marker_icon.setAttribute("onmouseover", onclick_string + ")"); // Icon, don't jump
 
                     target_list.forEach(function(elem){
-                        target_list_td = document.createElement("td");
+                        // Generate data for table rows
+                        var target_list_td = document.createElement("td");
                         target_list_td.innerText = datum[elem];
                         target_list_tr.appendChild(target_list_td);
                     });
-                    target_list_tr.className = target_list_id_counter;
-                    target_list_table_body.appendChild(target_list_tr);
-                    target_list_id_counter++;
-                };
-                target_list = document.getElementById("target-list-id");
+                    target_list_tr.className = target_list_class_counter;
+                    target_list_table_body.appendChild(target_list_tr); 
+                    target_list_class_counter++;
+                }; // End scanning dataset
+                var target_list = document.getElementById("target-list-id");
                 target_list.appendChild(target_list_title);
                 target_list_table.appendChild(target_list_table_body);
                 target_list.appendChild(target_list_table);
-            });
+            }); // Close csv
 
             L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
                 maxZoom: 18,
                 id: 'mapbox.satellite',
                 accessToken: "pk.eyJ1Ijoiam9uYm9uZDUiLCJhIjoiY2o1eHN6aGk3MDlxOTMzb2VwYTJrMDFrZyJ9.KHDHGTi1u8WoFyR6FoPg2A"
-            }).addTo(mymap);
+            }).addTo(mymap); // Connect to mapbox tileset
 
             function toggle_sidebar(){
-                menu = document.getElementById("target-list-id");
-                button = document.getElementById("toggle-button");
-                map = document.getElementById("mapid");
-                bottom = document.getElementById('bottom-panel-wrapper');
+                // Controls moving sidebar on/off screen through width editing
+                menu = document.getElementById("target-list-id"); // Sidebar
+                button = document.getElementById("toggle-button"); // Sidebar button
+                map = document.getElementById("mapid"); // Map
+                bottom = document.getElementById('bottom-panel-wrapper'); // Panel section
                 if(menu.style.width != "25%"){
                     menu.style.width = "25%";
                     button.style.left = "calc(75% - 50px)";
@@ -426,121 +418,109 @@
             }
 
             function destroy_bottom_panel(){
-                bottom = document.getElementById("bottom-panel-wrapper");
-                children = bottom.children;
-                children = Array.from(children);
+                // Clear all elements from panel section
+                var bottom = document.getElementById("bottom-panel-wrapper");
+                var children = bottom.children;
+                var children = Array.from(children);
                 children.forEach(function(elem){
                     elem.innerHTML = "";
                 })
             }
 
             function clear_target_list(){
-                var active_target = document.getElementsByClassName("active");
+                // Remove active class from active icon and tr
+                var active_target = document.getElementsByClassName("target-list-active");
                 var active_icon = document.getElementsByClassName("active_icon");
                 if(active_target.length){
-                    active_target[0].classList.remove("active");
+                    active_target[0].classList.remove("target-list-active");
                     active_icon[0].src = "./leaflet/images/marker-icon-2x.png";
                     active_icon[0].classList.remove("active_icon");
                 }
             }
 
-            function generate_progress_ring(class_name){
-// https://codepen.io/xgad/post/svg-radial-progress-meters
-                //bottom = document.getElementById('bottom-panel-wrapper');
-                svg = document.createElementNS(svg_link,'svg');
-                svg.setAttribute("class", "svg");
-                svg.setAttribute("width", "150");
-                svg.setAttribute("height", "150");
-                back_ring = document.createElementNS(svg_link, 'circle');
-                back_ring.setAttribute("cx", "60");
-                back_ring.setAttribute("cy", "60");
-                back_ring.setAttribute("r", "54");
-                back_ring.setAttribute("fill", "none");
-                back_ring.setAttribute("stroke-width", "12");
-                front_ring = back_ring.cloneNode();
-                back_ring.setAttribute("stroke", "#e6e6e6");
-                front_ring.setAttribute("stroke-dasharray", "339.292");
-                front_ring.setAttribute("transform", "rotate(-90 60 60)");
-                front_ring.setAttribute("class", "progress-ring-svg-" + class_name);
-
-                svg.appendChild(back_ring);
-                svg.appendChild(front_ring);
-                return svg;
-            }
-
-            function generate_progress_bar(x, y, text){
-                var rect = document.createElementNS(svg_link, 'rect');
-                var label = document.createElement("label");
-                var text_node = document.createTextNode(text);
-                rect.id = "panel-2-progress-bar";
-                label.appendChild(text_node);
-                rect.setAttribute("class", "svg-progress-bar");
-                rect.setAttribute('x', x);
-                rect.setAttribute('y', y);
-                rect.setAttribute('width', 0);
-                rect.setAttribute('height', 35);
-                return rect;
-            }
-
-            function generate_svg_bubble(text, cx, cy, r){
-                svg = document.createElement("main-svg");
-                circle = document.createElementNS(svg_link, 'circle');
-                svg_text = document.createElementNS(svg_link, "text");
-                text_node = document.createTextNode(text);
-                circle.setAttribute("cx", cx);
-                circle.setAttribute("cy", cy);
-                circle.setAttribute("r", r);
-                circle.setAttribute("fill", "white");
-                svg_text.setAttribute("y", cy);
-                svg_text.setAttribute("x", cx);
-                svg_text.setAttribute("text-anchor", "middle");
-                svg_text.appendChild(text_node);
-                svg.appendChild(circle);
-                svg.appendChild(svg_text);
-            }
-
             function generate_panel_1(strike, entity_name){
-                var panel = document.getElementById("sample-space-1");
+                // Create and append left-most panel
+                var panel = document.getElementById("panel-1");
                 var header = document.createElement("h1");
-                header.innerHTML = "<span style=color:green>" + entity_name + "</span> - levels";
+                // header is name of target and BDA levels
+                header.innerHTML = "<b>BDA</b> - <i>" + entity_name + "</i>";
                 header.id = "panel-1-header";
                 panel.appendChild(header);
-                base_info_box = generate_info_boxes();
-                base_info_box.className = "panel-1-box";
-                var elements = find_analysis_levels(strike);
-                elements.forEach(function(bda){
+                var base_info_box = generate_info_boxes(); // create base container
+                base_info_box.className = "panel-1-box";  // style base container
+                var elements = find_analysis_levels(strike); // Get BDA levels
+                elements.forEach(function(bda){ // elements --> [{}, {}, ...]
                     var box_clone = base_info_box.cloneNode();
                     var box_clone_header = document.createElement("h2");
                     var box_list = document.createElement("ol");
                     box_list.className = "panel-1-list";
                     for(var i in bda){
+                        // For all keys in bda
                         var box_list_item = document.createElement("li");
                         box_list_item.innerHTML = "<b>" + i + "</b>: " + bda[i];
                         box_list.appendChild(box_list_item);
                     }
+                    /* Color code based on physical damage and confidence
+                     Provide important information quickly
+                     Green = destroyed and confident
+                     Yellow = destroyed and not confident
+                     Red = not destroyed and confident */
+                    var conf = bda['Confidence'];
+                    var destruction = bda['Physical'];
+                    if(conf == "confident" && destruction == "destroyed"){
+                        box_clone.classList.add("green");
+                    }
+                    else if(conf == "possible"){
+                        box_clone.classList.add("yellow");
+                    }
+                    else{
+                        box_clone.classList.add("red");
+                    }
                     box_clone.appendChild(box_list);
                     panel.appendChild(box_clone);
-                });
-                for(var i =1; i < panel.childElementCount; i++){
+                }); // End bda loop
+                for(var i =1; i < panel.childElementCount; i++){ // Delayed fade in style generation
                     panel.childNodes[i].style.animationDelay = String(i / 4 - .25) + "s";
                 }
+                conf = elements['Confidence'];
+                destruction = elements['Physical'];
             }
 
-            function generate_panel_2(strike){/*
-                var panel = document.getElementById("sample-space-2");
+            function generate_panel_2(strike){
+                // Generate middle panel
+
+                // Generate personnel
+                var personnel = {"Commanding Officer": "Bruce", "Targeteer": "Jon", "Weaponeer": "Jeff"};
                 var header = document.createElement("h1");
-                header.innerText = "Effectiveness";
-                var datum = find_analysis_counts(strike);
-                var progress_ring = generate_progress_ring("1");
-                var rect = generate_progress_bar(10, 10, 'test');
-                var svg = document.createElementNS(svg_link, 'svg');
-                svg.appendChild(rect);
-                panel.appendChild(svg);
-                rect.setAttribute('width', '100');*/
+                var list = document.createElement("ul");
+                var panel = document.getElementById("panel-2");
+
+                header.id = "panel-2-header";
+                list.id = "panel-2-list";
+                header.innerText = "Personnel";
+
+                // Add personnel to list element
+                for(var person in personnel){
+                    var li = document.createElement("li");
+                    li.innerHTML = "<b>" + person + "</b>: " + personnel[person];
+                    list.appendChild(li);
+                };
+
+                // Get simple weaponeer stats
+                var weaponeer_rate = "0.8"; // 80 percent 
+                var targeteer_rate = "0.7";
+                var weaponeer_ring = generate_progress_ring(+weaponeer_rate, "Weaponeer Efficiency");
+                var targeteer_ring = generate_progress_ring(+targeteer_rate, "Targeteer Efficiency", svg_id="panel-2-targeteer-ring");
+
+                panel.appendChild(header);
+                panel.appendChild(list);
+                panel.appendChild(weaponeer_ring);
+                panel.appendChild(targeteer_ring);
             }
 
             function generate_panel_3(strike){
-                var panel = document.getElementById("sample-space-3");
+                // Generate right-most panel
+                var panel = document.getElementById("panel-3");
                 var header = document.createElement("h1");
                 header.innerText = "Target information";
                 panel.appendChild(header);
@@ -562,6 +542,7 @@
             }
 
             function generate_info_boxes(){
+                // A styled div with header and content sections
                 var base_info_box = document.createElement("div");
                 var base_info_box_header = base_info_box.cloneNode();
                 var base_info_box_content = base_info_box.cloneNode();
@@ -573,39 +554,93 @@
                 return base_info_box;
             }
 
-            /*
+            function generate_progress_bar(width, percentage, svg_id=null, rect_id=null){
+                var svg = document.createElementNS(svg_link, 'svg');
+                var rect = document.createElementNS(svg_link, 'rect');
 
-                var demo_ring_1 = generate_progress_ring("1");
-                var demo_ring_2 = generate_progress_ring("2");
-                var demo_ring_3 = generate_progress_ring("3");
+                rect.setAttribute('x', '0');
+                rect.setAttribute('y', '0');
+                rect.setAttribute('height', '50');
+
+                var back_rect = rect.cloneNode();
+                back_rect.setAttribute('fill', "#fff");
+                back_rect.setAttribute('width', width);
+                rect.setAttribute('fill', '#333');
+                rect.setAttribute('width', width * percentage);
+                rect.id = "panel-2-destruction-progress-bar";
+
+                //Animation
+                var animation = document.createElementNS(svg_link, 'animate');
+                animation.setAttribute('attributeName', 'width');
+                animation.setAttribute('from', '0');
+                animation.setAttribute('to', width * percentage);
+                animation.setAttribute('dur', '1s');
+
+                if(svg_id)  svg.id = svg_id;
+                if(rect_id) rect.id = rect_id;
+
+                rect.appendChild(animation);
+                svg.appendChild(back_rect);
+                svg.appendChild(rect);
+                return svg;
+            }
+
+            function generate_progress_ring(percentage, header_text, svg_id=null, circle_id=null){
+                // Generate animated progress bar
+                // Percentage is percentage of ring that will be filled
+                var svg = document.createElementNS(svg_link, 'svg');
+                var svg_text = document.createElementNS(svg_link, 'text');
+                var svg_header = document.createElementNS(svg_link, 'text');
+                var circle = document.createElementNS(svg_link, 'circle');
+                var animation = document.createElementNS(svg_link, 'animate');
+                var text_node = document.createTextNode(String(percentage * 100) + "%");
+                var header_node = document.createTextNode(header_text);
+                var offset = String(377 * (1-percentage));
+
+                if(svg_id) svg.id = svg_id;
+                if(circle_id) circle.id = circle_id;
+
+                svg.setAttribute("width", 178);
+                svg.setAttribute("height", 178); // 2 * (r + stroke-width) + 34 [for text]
+
+                svg_text.setAttribute("x", "50%");
+                svg_text.setAttribute("y", "50%");
+                svg_text.setAttribute("text-anchor", "middle");
+                svg_text.id = "panel-2-ring-text";
+
+                svg_header.setAttribute("x", "50%");
+                svg_header.setAttribute("y", "24");
+                svg_header.setAttribute("text-anchor", "middle");
+
+                circle.setAttribute("cx", "14"); // r - stroke-width
+                circle.setAttribute("cy", "50%"); // r + stroke-width
+                circle.setAttribute("fill", "none");
+                circle.setAttribute("r", "60");
+                circle.setAttribute("stroke-width", "12");
+                circle.setAttribute("class", "panel-2-ring");
+                circle.setAttribute("transform", "rotate(-90 60 60)"); // Lines up ring
+                circle.setAttribute("stroke-dasharray", "377");
+
+                var back_circle = circle.cloneNode();
+                circle.setAttribute("stroke", "#f77a52");
+                circle.setAttribute("stroke-dashoffset", offset);
+                back_circle.setAttribute("stroke", "#e6e6e6");
                 
-                demo_ring_1.setAttribute("stroke", "#0ff");
-                demo_ring_2.setAttribute("stroke", "#800");
-                demo_ring_3.setAttribute("stroke", "#0f4");
+                animation.setAttribute("attributeName", "stroke-dashoffset");
+                animation.setAttribute("from", "377");
+                animation.setAttribute("to", offset);
+                animation.setAttribute("dur", "1s");
 
-                demo_ring_text_1 = document.createElementNS(svg_link, "text");
-                demo_ring_text_2 = document.createElementNS(svg_link, "text");
-                demo_ring_text_3 = document.createElementNS(svg_link, "text");
-                demo_ring_text_1.innerHTML = "Confidence";
-                demo_ring_text_2.innerHTML = "MEA";
-                demo_ring_text_3.innerHTML = "Physical";
-                var temp = [demo_ring_text_1, demo_ring_text_2, demo_ring_text_3];
-                demo_ring_text_1.setAttribute("x", "20");
-                demo_ring_text_2.setAttribute("x", "45");
-                demo_ring_text_3.setAttribute("x", "30");
-                temp.forEach(function(d){
-                    d.setAttribute("y", "50");
-                })
+                svg_text.appendChild(text_node);
+                svg_header.appendChild(header_node);
+                circle.appendChild(animation);
+                svg.appendChild(svg_header);
+                svg.appendChild(svg_text);
+                svg.appendChild(back_circle);
+                svg.appendChild(circle);
+                return svg;
+            }
 
-                demo_ring_1.appendChild(demo_ring_text_1);
-                demo_ring_2.appendChild(demo_ring_text_2);
-                demo_ring_3.appendChild(demo_ring_text_3);
-
-                panel.appendChild(header);
-                panel.appendChild(demo_ring_1);
-                panel.appendChild(demo_ring_2);
-                panel.appendChild(demo_ring_3);
-                */
         </script>
     </body>
 </html>
